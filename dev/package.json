@@ -5,12 +5,12 @@
   "description": "TypeScript framework for building CS2 gamemodes with hot reload and plugin architecture",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework.git"
+    "url": "https://github.com/Nyx000/cs2-gamemode-framework.git"
   },
   "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework/issues"
+    "url": "https://github.com/Nyx000/cs2-gamemode-framework/issues"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework#readme",
+  "homepage": "https://github.com/Nyx000/cs2-gamemode-framework#readme",
   "scripts": {
     "//": "=== Development Workflow ===",
     "dev": "bun scripts/dev-workflow/dev-helper.mjs",

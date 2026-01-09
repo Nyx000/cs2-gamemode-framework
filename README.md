@@ -18,7 +18,7 @@ This framework gives you:
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/cs2-gamemode-framework.git
+git clone https://github.com/Nyx000/cs2-gamemode-framework.git
 cd cs2-gamemode-framework/dev
 bun install
 bun run dev
