@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+bun.lockb
+bun.lock
+
+# Build outputs
+scripts/*.vjs
+scripts/*.js
+*.vjs_c
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Claude Code (local settings)
+.claude/
+
+# PID files from dev scripts
+dev/.pids/

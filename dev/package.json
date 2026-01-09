@@ -1,0 +1,58 @@
+{
+  "name": "cs2-gamemode-framework",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TypeScript framework for building CS2 gamemodes with hot reload and plugin architecture",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/cs2-gamemode-framework#readme",
+  "scripts": {
+    "//": "=== Development Workflow ===",
+    "dev": "bun scripts/dev-workflow/dev-helper.mjs",
+    "dev:watch": "bun scripts/build/compile-all.mjs --watch & bun scripts/build/watch-deploy.mjs",
+    "dev:compile": "bun scripts/build/compile-all.mjs --watch",
+    "dev:deploy": "bun scripts/build/watch-deploy.mjs",
+    "stop": "bun scripts/dev-workflow/stop-dev.mjs",
+    "// ": "=== Build & Deploy ===",
+    "prebuild": "bun scripts/build/build-features.mjs",
+    "build": "bun run prebuild && bun run type-check && bun run compile",
+    "compile": "bun scripts/build/compile-all.mjs",
+    "deploy": "bun run compile && bun scripts/build/watch-deploy.mjs --once",
+    "deploy:clean": "rm -rf \"../../../../game/csgo_addons/workbench/scripts\"/* && bun run deploy",
+    "quick-reload": "bun scripts/dev-workflow/quick-reload.mjs",
+    "//  ": "=== Code Quality ===",
+    "lint": "eslint src/**/*.ts --ignore-pattern 'src/types/cs_script.d.ts' --no-warn-ignored",
+    "type-check": "tsc --noEmit",
+    "check": "bun run lint & bun run type-check && wait",
+    "format": "eslint src/**/*.ts --ignore-pattern 'src/types/cs_script.d.ts' --no-warn-ignored --fix",
+    "//   ": "=== Maintenance ===",
+    "clear-cache": "bun scripts/maintenance/clear-cache.mjs",
+    "clean": "rm -rf ../scripts/*.js ../scripts/*.vjs",
+    "fresh": "bun run clear-cache && bun run deploy:clean",
+    "sync-types": "bun scripts/maintenance/sync-type-definitions.mjs",
+    "extract-props": "bun scripts/utils/extract-props.mjs",
+    "//    ": "=== Utilities ===",
+    "logs": "bun scripts/dev-workflow/view-logs.mjs"
+  },
+  "keywords": [
+    "cs2",
+    "counter-strike-2",
+    "cs_script",
+    "source2",
+    "workshop",
+    "modding"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
+  }
+}
