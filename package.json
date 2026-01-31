@@ -1,0 +1,42 @@
+{
+  "name": "cs2-gamemode-framework",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TypeScript framework for building CS2 gamemodes with hot reload and plugin architecture",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nyx000/cs2-gamemode-framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nyx000/cs2-gamemode-framework/issues"
+  },
+  "homepage": "https://github.com/Nyx000/cs2-gamemode-framework#readme",
+  "scripts": {
+    "dev": "bun tools/build/compile-all.mjs --watch & bun tools/build/watch-deploy.mjs",
+    "build": "bun tools/build/build-plugins.mjs && tsc --noEmit && bun tools/build/compile-all.mjs",
+    "deploy": "bun tools/build/compile-all.mjs && bun tools/build/watch-deploy.mjs --once",
+    "reload": "bun tools/reload.mjs",
+    "reload:hammer": "bun tools/reload.mjs --hammer",
+    "check": "eslint src/**/*.ts --ignore-pattern 'src/types/cs_script.d.ts' --no-warn-ignored && tsc --noEmit",
+    "lint": "eslint src/**/*.ts --ignore-pattern 'src/types/cs_script.d.ts' --no-warn-ignored",
+    "format": "eslint src/**/*.ts --ignore-pattern 'src/types/cs_script.d.ts' --no-warn-ignored --fix",
+    "sync-types": "bun tools/maintenance/sync-type-definitions.mjs",
+    "clean": "rm -rf dist/*.js dist/*.vjs"
+  },
+  "keywords": [
+    "cs2",
+    "counter-strike-2",
+    "cs_script",
+    "source2",
+    "workshop",
+    "modding"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.52.0",
+    "@typescript-eslint/parser": "^8.52.0",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
+  }
+}

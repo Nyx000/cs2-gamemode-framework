@@ -6,9 +6,7 @@ bun.lockb
 bun.lock
 
 # Build outputs
-scripts/*.vjs
-scripts/*.js
-*.vjs_c
+dist/
 
 # IDE
 .vscode/
@@ -25,8 +23,25 @@ Thumbs.db
 *.log
 logs/
 
-# Claude Code (local settings)
+# Claude Code (AI context - not needed for users)
 .claude/
+CLAUDE.md
+**/CLAUDE.md
+
+# Generated HTML guides
+FRAMEWORK_GUIDE*.html
+
+# Game content (Hammer/Workshop assets - not source code)
+maps/
+sounds/
+soundevents/
+postprocess/
+materials/
+models/
+particles/
 
 # PID files from dev scripts
-dev/.pids/
+.pids/
+
+# Archived custom implementations (reference only)
+.archive/

@@ -1,4 +1,4 @@
-# cs2-gamemode-framework
+# CS2 Gamemode Framework
 
 A TypeScript framework for building custom CS2 gamemodes using Valve's `cs_script` system.
 
@@ -6,123 +6,85 @@ Write TypeScript, get hot reload, stop copy-pasting boilerplate.
 
 ## What this is
 
-CS2's `cs_script` lets you run JavaScript in maps via `point_script` entities. The problem is there's no structure - everyone writes monolithic scripts and copy-pastes the same patterns between projects.
-
-This framework gives you:
+CS2's `cs_script` lets you run JavaScript in maps via `point_script` entities. This framework gives you:
 
 - **Plugin architecture** - Features are self-contained modules with lifecycle hooks
-- **Hot reload that actually works** - State preservation across `script_reload`, no more restarting maps to test changes
-- **Centralized event handling** - One place dispatches events to all features, no more scattered `OnPlayerConnect` calls
-- **TypeScript with real types** - Synced from your CS2 installation, always current
+- **Hot reload that works** - State preservation across `script_reload`
+- **Centralized event handling** - One orchestrator dispatches events to all features
+- **TypeScript with real types** - Generated from your CS2 installation
 
 ## Quick start
 
 ```bash
 git clone https://github.com/Nyx000/cs2-gamemode-framework.git
-cd cs2-gamemode-framework/dev
+cd cs2-gamemode-framework
 bun install
 bun run dev
 ```
 
-This starts watch mode - edit TypeScript, it compiles and deploys automatically.
-
-In CS2 (with `-tools` flag), run `script_reload` to hot reload your changes.
+In CS2 (with `-tools` flag), run `script_reload` to hot reload changes.
 
 ## Project structure
 
 ```
-dev/
-├── src/
-│   ├── core/                    # The framework (don't edit unless extending)
-│   │   ├── feature.ts           # Feature interface
-│   │   └── gamemode-orchestrator.ts
-│   ├── features/                # Your features go here
-│   │   ├── index.ts             # Auto-generated registry
-│   │   ├── example-feature/
-│   │   └── multitool/           # Real example: prop placement system
-│   ├── scripts/
-│   │   └── workbench-gamemode.ts  # Main entry point
-│   └── types/
-│       └── cs_script.d.ts       # CS2 API definitions
-└── scripts/                     # Compiled .vjs output
+src/
+├── core/                       # Framework (the reusable part)
+│   ├── feature.ts              # Feature interface + FeatureContext
+│   ├── gamemode-orchestrator.ts # Central event dispatcher
+│   ├── event-bus.ts            # Inter-feature communication
+│   └── state-utils.ts          # Hot reload state serialization
+├── features/                   # Your features
+│   ├── index.ts                # Auto-generated feature registry
+│   ├── example-feature/        # Minimal template to copy
+│   └── debug/                  # Event logger (toggleable)
+├── gamemodes/
+│   └── my-gamemode.ts          # Entry point template
+└── types/
+    └── cs_script.d.ts          # CS2 API definitions
 ```
 
 ## Creating a feature
 
-Add a folder in `dev/src/features/`, export a create function:
+1. Create folder: `src/features/my-feature/` (use kebab-case)
+2. Add `index.ts` with a factory function named `createMyFeature` (create + PascalCase):
 
 ```typescript
-// dev/src/features/my-feature/index.ts
-import { CSPlayerController, Instance } from "cs_script/point_script";
-import { Feature } from "../../core/feature";
+import { CSPlayerController } from "cs_script/point_script";
+import { Feature, FeatureContext } from "../../core/feature";
 
-export function createMyFeature(instance: typeof Instance): Feature {
-  let playerScores: Record<number, number> = {};
+export function createMyFeature({ instance, eventBus }: FeatureContext): Feature {
+  let state = { playerCount: 0 };
 
   return {
     init() {
       instance.Msg("[MyFeature] Ready");
     },
+    cleanup() {},
+    getState() { return { ...state }; },
+    restoreState(s) { state = s; },
 
-    cleanup() {
-      // Called before hot reload
-    },
-
-    getState() {
-      return { playerScores };
-    },
-
-    restoreState(state) {
-      playerScores = state.playerScores;
-    },
-
-    onPlayerActivate(player: CSPlayerController) {
-      const slot = player.GetPlayerSlot();
-      playerScores[slot] = 0;
-    },
-
-    onThink() {
-      // Called every tick by the orchestrator
+    onPlayerConnect(player: CSPlayerController) {
+      state.playerCount++;
+      eventBus.emit("my-feature:player-joined", { slot: player.GetPlayerSlot() });
     },
   };
 }
 ```
 
-Run `bun run build` - the feature auto-registers.
-
-## Creating a gamemode
-
-```typescript
-// dev/src/scripts/my-gamemode.ts
-import { Instance } from "cs_script/point_script";
-import { createGamemodeOrchestrator } from "../core/gamemode-orchestrator";
-import { features } from "../features";
-
-const orchestrator = createGamemodeOrchestrator(Instance, {
-  gamemodeName: "My Gamemode",
-  features: features,
-  serverCommands: ["mp_roundtime 5", "sv_cheats 1"],
-  welcomeMessages: ["Welcome!", "Press R with zeus to cycle modes"],
-  disabledFeatures: ["example-feature"],
-});
-
-Instance.OnActivate(() => {
-  orchestrator.initialize();
-});
-```
+3. Run `bun run build` - feature is auto-discovered and registered
+4. Add to `enabledFeatures: ["myFeature"]` in your gamemode to use it
 
 ## Commands
 
 ```bash
-bun run dev          # Watch mode (start here)
+bun run dev          # Watch mode - auto-compile on save
 bun run build        # One-time build with type checking
 bun run deploy       # Build and copy to game directory
 bun run check        # Lint + type check
-bun run sync-types   # Update cs_script.d.ts from your CS2 install
-bun run quick-reload # Nuclear option when scripts won't load
+bun run sync-types   # Update cs_script.d.ts from CS2
 ```
 
-## The golden rules
+## Golden rules
 
 **1. Never store entity references**
 
@@ -136,40 +98,19 @@ const door = Instance.FindEntityByName(doorName);
 if (door?.IsValid()) door.Open();
 ```
 
-**2. Clear think loops before hot reload**
+**2. cs_script.d.ts is the source of truth**
 
-The framework handles this, but if you're doing something custom:
+If a method isn't in there, it doesn't exist.
 
-```typescript
-Instance.OnScriptReload({
-  before: () => {
-    Instance.SetNextThink(-1); // Critical
-    return stateToSave;
-  },
-});
-```
+**3. No async/await**
 
-**3. cs_script.d.ts is the source of truth**
-
-If a method isn't in there, it doesn't exist. Run `bun run sync-types` to update from your CS2 installation.
-
-## Docs
-
-- `dev/docs/COMMON_PATTERNS.md` - Think loops, damage handling, tracing, etc.
-- `dev/docs/API_CHANGELOG.md` - Breaking changes when CS2 updates
-- `ARCHITECTURE_GUIDE.txt` - Deep dive on the design patterns
+CS2's V8 doesn't support Promises. Use think loops for delayed operations.
 
 ## Requirements
 
-- [Bun](https://bun.sh) (or Node, but Bun is faster)
+- [Bun](https://bun.sh) (or Node)
 - CS2 with Workshop Tools DLC
 - A map with a `point_script` entity
-
-## Why this exists
-
-I analyzed 27+ Zombie Escape map scripts. Found 2,000+ lines of duplicated boilerplate - the same boss HP system copied 5 times, heal zones reimplemented everywhere, utility functions pasted into every file.
-
-This framework eliminates that. Write a feature once, use it everywhere. The multitool feature included here is 340 lines that would be 600+ without the framework.
 
 ## License
 
